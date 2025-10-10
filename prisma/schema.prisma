@@ -1,0 +1,60 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite" // change to "postgresql" in prod and update DATABASE_URL
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id          String @id @default(cuid())
+  slug        String @unique
+  title       String
+  description String
+  priceCents  Int
+  currency    String @default("USD")
+
+  images   Json? // string[]
+  category String?
+  type     String?
+  ing      Json? // string[]
+  need     Json? // string[]
+  tag      Json? // string[]
+
+  // --- SEO overrides (optional) ---
+  metaTitle       String?
+  metaDescription String?
+  ogImage         String? // absolute or relative URL
+  canonical       String? // absolute or relative URL
+
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([title])
+  @@index([category])
+}
+
+model BlogPost {
+  id         String   @id @default(cuid())
+  slug       String   @unique
+  title      String
+  excerpt    String?
+  content    String
+  coverImage String?
+  tags       Json? // string[]
+  published  Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // --- SEO overrides (optional) ---
+  metaTitle       String?
+  metaDescription String?
+  ogImage         String?
+  canonical       String?
+
+  @@index([title])
+  @@index([slug])
+}

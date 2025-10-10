@@ -1,0 +1,26 @@
+// Prisma schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  description String
+  priceCents  Int
+  currency    String   @default("usd")
+  images      Json
+  category    String?   // e.g. "superfoods"
+  type        String?   // "powder" | "capsule" | "snack" | "bundle"
+  tags        Json?     // ["spirulina","immunity","best"]
+  published   Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}

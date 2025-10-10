@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+/* Tokens */
+:root {
+  --brand: 142 70% 35%;         /* green */
+  --bg: 0 0% 100%;
+  --fg: 222.2 47.4% 11.2%;
+}
+
+@theme {
+  --color-brand: hsl(var(--brand));
+  --color-bg: hsl(var(--bg));
+  --color-fg: hsl(var(--fg));
+  --font-sans: ui-sans-serif, system-ui, Inter, Arial, sans-serif;
+}
+
+html, body { height: 100%; background: var(--color-bg); color: var(--color-fg); font-family: var(--font-sans); }
+a { color: inherit; }
+button, .btn { border-radius: .5rem; padding:.5rem 1rem; }
+.btn-primary { background: var(--color-brand); color:#fff; }
+.btn-outline { border:1px solid #d1d5db; }
