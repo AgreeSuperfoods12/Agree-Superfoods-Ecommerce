@@ -3,13 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "typecheck": "tsc --noEmit",
     "build": "next build",
+    "dev": "next dev",
     "start": "next start",
     "postinstall": "prisma generate",
     "vercel-build": "prisma generate && prisma db push && next build",
-    "lint": "eslint",
-    "seed": "node prisma/seed.js"
+    "seed": "node prisma/seed.js",
+    "lint": "eslint"
   },
   "dependencies": {
     "@mdx-js/loader": "^3.1.1",

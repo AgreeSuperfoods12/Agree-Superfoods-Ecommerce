@@ -1,5 +1,6 @@
 // lib/products.ts
 import { prisma } from "@/lib/db";
+import type { Prisma } from "@prisma/client";
 
 /** Product detail page */
 export async function getProductBySlug(slug: string) {
@@ -25,29 +26,41 @@ export async function listProducts(args: {
 } = {}) {
   const { q, category, type, ing, need, tag, sort } = args ?? {};
 
-  const where: any = { published: true };
+  const where: Prisma.ProductWhereInput = {
+    published: true,
+    ...(category ? { category } : {}),
+    ...(type ? { type } : {}),
+  };
+
   if (q) {
     where.OR = [
       { title: { contains: q, mode: "insensitive" } },
       { description: { contains: q, mode: "insensitive" } },
     ];
   }
-  if (category) where.category = category;
-  if (type) where.type = type;
 
-  const orderBy =
-    sort === "price-asc"  ? { priceCents: "asc" }  :
-    sort === "price-desc" ? { priceCents: "desc" } :
-    sort === "new" || sort === "newest" ? { createdAt: "desc" } :
-    { createdAt: "desc" };
+  const orderBy: Prisma.ProductOrderByWithRelationInput = (() => {
+    switch (sort) {
+      case "price-asc":
+        return { priceCents: "asc" };
+      case "price-desc":
+        return { priceCents: "desc" };
+      case "new":
+      case "newest":
+      default:
+        return { createdAt: "desc" };
+    }
+  })();
 
   let items = await prisma.product.findMany({ where, orderBy });
 
-  // JSON array filters (SQLite) are done in JS
-  const has = (arr: unknown, val: string) => Array.isArray(arr) && (arr as string[]).includes(val);
-  if (ing)  items = items.filter((p: any) => has(p.ing,  ing));
-  if (need) items = items.filter((p: any) => has(p.need, need));
-  if (tag)  items = items.filter((p: any) => has(p.tag,  tag));
+  // Helpers to safely handle JSON string arrays stored in Postgres JSON columns
+  const toStringArray = (val: unknown): string[] =>
+    Array.isArray(val) ? (val.filter((v) => typeof v === "string") as string[]) : [];
+
+  if (ing)  items = items.filter((p) => toStringArray(p.ing).includes(ing));
+  if (need) items = items.filter((p) => toStringArray(p.need).includes(need));
+  if (tag)  items = items.filter((p) => toStringArray(p.tag).includes(tag));
 
   return items;
 }
