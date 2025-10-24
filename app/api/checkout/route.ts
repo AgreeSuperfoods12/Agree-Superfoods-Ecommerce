@@ -6,24 +6,22 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
-  // Block gracefully if Stripe isn’t configured (prevents build-time crashes)
+  // Block gracefully if Stripe isn’t configured
   if (!isStripeConfigured) {
     return NextResponse.json(
       { error: "Stripe is not configured on this deployment." },
-      { status: 501 }
+      { status: 503 }
     );
   }
 
   const stripe = getStripe();
 
-  // Expecting a body like: { lineItems: [{ price: "...", quantity: 1 }], successUrl?, cancelUrl? }
-  const body = await req.json().catch(() => ({}));
+  // Expecting: { lineItems: [{ price: "...", quantity: 1 }], successUrl?, cancelUrl? }
+  const body = await req.json().catch(() => ({} as any));
   const lineItems = Array.isArray(body?.lineItems) ? body.lineItems : [];
+
   if (lineItems.length === 0) {
-    return NextResponse.json(
-      { error: "No line items provided." },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "No line items provided." }, { status: 400 });
   }
 
   const base =

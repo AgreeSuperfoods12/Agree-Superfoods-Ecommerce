@@ -1,9 +1,17 @@
+// app/admin/(protected)/layout.tsx
+export const runtime = "nodejs";          // run on Node, not Edge
+export const dynamic = "force-dynamic";   // no prerender/caching
+export const revalidate = 0;
+
 import { isAuthed } from "../session";
 import { redirect } from "next/navigation";
 import { logout } from "../actions";
 
-export default async function AdminProtectedLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminProtectedLayout({
+  children,
+}: { children: React.ReactNode }) {
   if (!(await isAuthed())) redirect("/admin/login");
+
   return (
     <div className="min-h-dvh">
       <header className="border-b bg-white/80 backdrop-blur">
@@ -13,7 +21,9 @@ export default async function AdminProtectedLayout({ children }: { children: Rea
             <a href="/admin/products">Products</a>
             <a href="/admin/blog">Blog</a>
             <a href="/">Storefront</a>
-            <form action={logout}><button className="rounded-lg border px-3 py-1.5">Logout</button></form>
+            <form action={logout}>
+              <button className="rounded-lg border px-3 py-1.5">Logout</button>
+            </form>
           </nav>
         </div>
       </header>

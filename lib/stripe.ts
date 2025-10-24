@@ -1,29 +1,20 @@
 // lib/stripe.ts
 import Stripe from "stripe";
 
-export const isStripeConfigured =
-  !!(
-    process.env.STRIPE_SECRET_KEY ||
-    process.env.STRIPE_API_KEY ||
-    process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY
-  );
+let stripeSingleton: Stripe | null = null;
 
-/** Create a Stripe client only when needed (prevents build-time crash). */
-export function getStripe() {
-  const key =
-    process.env.STRIPE_SECRET_KEY ||
-    process.env.STRIPE_API_KEY ||
-    process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY;
+/** True if a Stripe secret key is present in env. */
+export const isStripeConfigured = !!process.env.STRIPE_SECRET_KEY;
 
-  if (!key) {
-    throw new Error(
-      "Stripe is not configured — set STRIPE_SECRET_KEY in your environment."
-    );
+/** Lazily create and reuse a single Stripe client. */
+export function getStripe(): Stripe {
+  if (!isStripeConfigured) {
+    throw new Error("Stripe is not configured (missing STRIPE_SECRET_KEY).");
   }
-
-  return new Stripe(key, {
-    // You can omit apiVersion to use Stripe’s default, or pin to a recent version:
-    // apiVersion: "2024-06-20",
-    appInfo: { name: "Agree Superfoods", version: "0.1.0" },
-  });
+  if (!stripeSingleton) {
+    stripeSingleton = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: "2024-06-20" as any,
+    });
+  }
+  return stripeSingleton;
 }
