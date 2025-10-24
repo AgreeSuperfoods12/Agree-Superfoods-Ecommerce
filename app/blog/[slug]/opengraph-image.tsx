@@ -1,28 +1,26 @@
 import { ImageResponse } from "next/og";
 import { prisma } from "@/lib/db";
-import { toAbsoluteUrl } from "@/lib/seo";
 
-export const runtime = "edge";
+// Run on Node.js to avoid edge bundle size limits (edge limit = 1MB on free plan)
+export const runtime = "nodejs";
+
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export default async function Image({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: { slug: string }; // not a Promise; synchronous params
 }) {
-  const { slug } = await params;
+  const { slug } = params;
+
+  // Pull only what's needed to keep the function light
   const post = await prisma.blogPost.findUnique({
     where: { slug },
-    select: { title: true, coverImage: true },
+    select: { title: true },
   });
 
   const title = post?.title ?? slug.replace(/-/g, " ");
-  const bg = post?.coverImage
-    ? post.coverImage.startsWith("/")
-      ? toAbsoluteUrl(post.coverImage)
-      : post.coverImage
-    : undefined;
 
   return new ImageResponse(
     (
@@ -31,57 +29,16 @@ export default async function Image({
           width: "100%",
           height: "100%",
           display: "flex",
-          padding: 64,
+          alignItems: "center",
           justifyContent: "center",
-          alignItems: "flex-end",
-          background:
-            "linear-gradient(135deg, #111827 0%, #1f2937 45%, #111827 100%)",
-          position: "relative",
+          padding: 80,
+          fontSize: 64,
+          fontWeight: 800,
         }}
       >
-        {bg ? (
-          <img
-            src={bg}
-            alt=""
-            style={{
-              position: "absolute",
-              inset: 0,
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              opacity: 0.25,
-              filter: "blur(2px)",
-            }}
-          />
-        ) : null}
-
-        <div
-          style={{
-            width: "100%",
-            borderRadius: 24,
-            background: "rgba(255,255,255,0.08)",
-            padding: 40,
-            display: "flex",
-            flexDirection: "column",
-            gap: 16,
-          }}
-        >
-          <div
-            style={{
-              fontSize: 56,
-              fontWeight: 800,
-              color: "white",
-              lineHeight: 1.1,
-            }}
-          >
-            {title}
-          </div>
-          <div style={{ color: "#cbd5e1", fontSize: 28, fontWeight: 600 }}>
-            Phenomena • Blog
-          </div>
-        </div>
+        {title}
       </div>
     ),
-    size
+    { ...size }
   );
 }
