@@ -6,7 +6,7 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
-  directUrl = env("DATABASE_URL_UNPOOLED") // <-- required for Neon migrations
+  directUrl = env("DATABASE_URL_UNPOOLED") // keep if you’ll run migrations on Neon
 }
 
 model Product {
@@ -17,12 +17,12 @@ model Product {
   priceCents  Int
   currency    String   @default("USD")
 
-  images   Json? // string[]
+  images   Json?
   category String?
   type     String?
-  ing      Json? // string[]
-  need     Json? // string[]
-  tag      Json? // string[]
+  ing      Json?
+  need     Json?
+  tag      Json?
 
   published Boolean  @default(true)
   createdAt DateTime @default(now())
